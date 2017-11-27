@@ -16,11 +16,14 @@ using NLog;
 using Semver;
 using System.Reflection;
 using System.IO;
+using Microsoft.Win32;
 
 namespace adrilight {
 
     public partial class MainForm : Form
     {
+        private static SessionSwitchEventHandler sseh;
+
         private readonly ILogger _log = LogManager.GetCurrentClassLogger();
 
         SerialStream _mSerialStream;
@@ -30,8 +33,12 @@ namespace adrilight {
         public static float WhiteBalanceFactorR = 1;
         public static float WhiteBalanceFactorG = 1;
         public static float WhiteBalanceFactorB = 1;
+        public static bool WorkstationLocked = false;
 
         public MainForm() {
+            sseh = new SessionSwitchEventHandler(SystemEvents_SessionSwitch);
+            SystemEvents.SessionSwitch += sseh;
+
             _log.Debug("Creating Mainform");
             InitializeComponent();
             Text += " " + Program.VersionNumber;
@@ -500,5 +507,18 @@ namespace adrilight {
             Settings.WhiteBalanceB = trackBarWhiteBalanceB.Value;
             Settings.Brightness = trackBarBrightness.Value;
         }
+
+        private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+        {
+            if (e.Reason == SessionSwitchReason.SessionLock)
+            {
+                WorkstationLocked = true;
+            }
+            else if (e.Reason == SessionSwitchReason.SessionUnlock)
+            {
+                WorkstationLocked = false;
+            }
+        }
+
     }
 }

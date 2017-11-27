@@ -176,10 +176,18 @@ namespace adrilight
             }
 
             //white balance and brightness
-            r *= MainForm.WhiteBalanceFactorR;
-            g *= MainForm.WhiteBalanceFactorG;
-            b *= MainForm.WhiteBalanceFactorB;
-
+            if (MainForm.WorkstationLocked)
+            {
+                r = 0;
+                g = 0;
+                b = 0;
+            }
+            else
+            {
+                r *= MainForm.WhiteBalanceFactorR;
+                g *= MainForm.WhiteBalanceFactorG;
+                b *= MainForm.WhiteBalanceFactorB;
+            }
             //limiter
             if (r < 0) r = 0;
             if (g < 0) g = 0;
