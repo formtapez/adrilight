@@ -14,7 +14,9 @@ namespace adrilight
     {
         private ILogger _log = LogManager.GetCurrentClassLogger();
 
-        private readonly byte[] _messagePreamble = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+//        private readonly byte[] _messagePreamble = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+        static byte[] bytes = BitConverter.GetBytes(Settings.LedsPerSpot * SpotSet.Spots.Length - 1);
+        private readonly byte[] _messagePreamble = { 0x41, 0x64, 0x61, bytes[1], bytes[0], 0x00 };
 
         private Thread _workerThread;
         private CancellationTokenSource _cancellationTokenSource;
@@ -66,9 +68,9 @@ namespace adrilight
                     {
                         for (int i = 0; i < Settings.LedsPerSpot; i++)
                         {
-                            outputStream[counter++] = SpotSet.Spots[j].Blue; // blue
                             outputStream[counter++] = SpotSet.Spots[j].Green; // green
                             outputStream[counter++] = SpotSet.Spots[j].Red; // red
+                            outputStream[counter++] = SpotSet.Spots[j].Blue; // blue
                         }
                     }
                 }
@@ -79,9 +81,9 @@ namespace adrilight
                     {
                         for (int i = 0; i < Settings.LedsPerSpot; i++)
                         {
-                            outputStream[counter++] = spot.Blue; // blue
                             outputStream[counter++] = spot.Green; // green
                             outputStream[counter++] = spot.Red; // red
+                            outputStream[counter++] = spot.Blue; // blue
                         }
                     }
                 }
@@ -123,14 +125,15 @@ namespace adrilight
                         //send frame data
                         byte[] outputStream = GetOutputStream();
                         serialPort.Write(outputStream, 0, outputStream.Length);
-
+/*
                         //ws2812b LEDs need 30 µs = 0.030 ms for each led to set its color so there is a lower minimum to the allowed refresh rate
                         //receiving over serial takes it time as well and the arduino does both tasks in sequence
                         //+1 ms extra safe zone
                         var fastLedTime = (outputStream.Length - _messagePreamble.Length)/3.0*0.030d;
                         var serialTransferTime = outputStream.Length*10.0*1000.0/baudRate;
                         var minTimespan = (int) (fastLedTime + serialTransferTime) + 1;
-
+*/
+                        var minTimespan = 6;
                         Task.Delay(minTimespan, cancellationToken).Wait(cancellationToken);
                         MainForm.FPS_Serial++;
                     }
